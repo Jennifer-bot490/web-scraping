@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SiteScout – Website information extractor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>SiteScout</h1>
+    <p>Paste a website address to see its pages, services, purpose and contact details.</p>
+  </header>
+
+  <main>
+    <form id="scan-form" class="scan">
+      <label class="field grow">
+        <span>Website address</span>
+        <input id="url" type="text" placeholder="example.com" autocomplete="off" required>
+      </label>
+      <label class="field">
+        <span>Pages to scan</span>
+        <select id="max">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+        </select>
+      </label>
+      <button id="go" type="submit">Scan website</button>
+    </form>
+
+    <p id="status" role="status" aria-live="polite"></p>
+
+    <section id="results" hidden>
+      <div class="summary">
+        <div>
+          <h2 id="site-title"></h2>
+          <a id="site-link" target="_blank" rel="noopener"></a>
+        </div>
+        <button id="download" type="button" class="ghost">Download JSON</button>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="overview" aria-selected="true">Purpose</button>
+        <button role="tab" data-tab="pages" aria-selected="false">Pages <b id="n-pages"></b></button>
+        <button role="tab" data-tab="services" aria-selected="false">Services <b id="n-services"></b></button>
+        <button role="tab" data-tab="contact" aria-selected="false">Contact <b id="n-contact"></b></button>
+      </div>
+
+      <div id="panel" class="panel"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
