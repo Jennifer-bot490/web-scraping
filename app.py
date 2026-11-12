@@ -1,7 +1,9 @@
 """SiteScout backend: crawls a website and extracts pages, services, purpose and contact info."""
 import ipaddress
+import os
 import re
 import socket
+import time
 from collections import deque
 from urllib.parse import urljoin, urlparse, urldefrag
 
@@ -50,6 +52,8 @@ def fetch(url: str):
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         if r.status_code != 200 or "text/html" not in r.headers.get("Content-Type", ""):
+            return None
+        if host_key(r.url) != host_key(url) and not is_public_host(urlparse(r.url).hostname or ""):
             return None
         r.encoding = r.apparent_encoding if r.encoding in (None, "ISO-8859-1") else r.encoding
         return r.url, BeautifulSoup(r.text, "html.parser")
@@ -117,11 +121,15 @@ def extract_page(url, soup):
     }
 
 
+MAX_SECONDS = 70  # stop crawling before the gunicorn timeout
+
+
 def crawl(start_url: str, max_pages: int):
     start_url = normalize(start_url)
     base = host_key(start_url)
     queue, seen, pages = deque([start_url]), {start_url.rstrip("/")}, []
-    while queue and len(pages) < max_pages:
+    started = time.time()
+    while queue and len(pages) < max_pages and time.time() - started < MAX_SECONDS:
         url = queue.popleft()
         got = fetch(url)
         if not got:
@@ -211,4 +219,6 @@ def scrape():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Local use only. On Render the app is started by gunicorn (see render.yaml).
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)),
+            debug=os.environ.get("FLASK_DEBUG") == "1")
